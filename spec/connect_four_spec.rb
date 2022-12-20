@@ -39,7 +39,7 @@ describe ConnectFour do
     end
   end
 
-  describe '#get_input' do
+  describe '#player_input' do
     subject(:game) { described_class.new }
     let(:error_message) { 'Invalid input. Please try again.' }
 
@@ -47,7 +47,7 @@ describe ConnectFour do
       it 'return the valid input num' do
         valid_input = '3'
         allow(game).to receive(:gets).and_return(valid_input)
-        result = game.get_input
+        result = game.player_input
         expected_return_value = 3
 
         expect(result).to eq(expected_return_value)
@@ -59,7 +59,7 @@ describe ConnectFour do
 
         expect(game).to_not receive(:puts).with(error_message)
 
-        game.get_input
+        game.player_input
       end
     end
 
@@ -72,7 +72,7 @@ describe ConnectFour do
       end
 
       it 'return valid input num at the end' do
-        result = game.get_input
+        result = game.player_input
         expected_return_value = 3
 
         expect(result).to eq(expected_return_value)
@@ -81,7 +81,7 @@ describe ConnectFour do
       it 'do output exception' do
         expect(game).to receive(:puts).with(error_message).once
 
-        game.get_input
+        game.player_input
       end
     end
 
@@ -98,14 +98,117 @@ describe ConnectFour do
       it 'output exception three times' do
         expect(game).to receive(:puts).with(error_message).exactly(3).time
 
-        game.get_input
+        game.player_input
       end
 
       it 'return valid input num at the end' do
-        result = game.get_input
+        result = game.player_input
         expected_return_value = 3
 
         expect(result).to eq(expected_return_value)
+      end
+    end
+  end
+
+  describe '#advance_round' do
+    subject(:game) { described_class.new }
+
+    context 'if current round is player1 round' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+      end
+
+      it 'next round is player2 round' do
+        game.advance_round
+        next_round = game.instance_variable_get(:@player_round)
+
+        expect(next_round).to eq('player2')
+      end
+    end
+
+    context 'if current round is player2 round' do
+      before do
+        game.instance_variable_set(:@player_round, 'player2')
+      end
+
+      it 'next round is player1 round' do
+        game.advance_round
+        next_round = game.instance_variable_get(:@player_round)
+
+        expect(next_round).to eq('player1')
+      end
+    end
+  end
+
+  describe '#insert_to_board_col' do
+    subject(:game) { described_class.new }
+    let(:col_num) { 0 }
+    let(:p1_piece) { game.instance_variable_get(:@player1_piece) }
+    let(:p2_piece) { game.instance_variable_get(:@player2_piece) }
+
+    before do
+      allow(game).to receive(:player_input).and_return(col_num)
+    end
+
+    context 'when current player is player1' do
+      it 'insert player1 piece into column' do
+        game.insert_to_board_col(col_num)
+        insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+        board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
+
+        expect(board_pos).to eq(p1_piece)
+      end
+    end
+
+    context 'when current player is player2' do
+      before do
+        game.instance_variable_set(:@player_round, 'player2')
+      end
+
+      it 'insert player2 piece into column' do
+        game.insert_to_board_col(col_num)
+        insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+        board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
+
+        expect(board_pos).to eq(p2_piece)
+      end
+    end
+  end
+
+  describe '#board_col_full?' do
+    subject(:game) { described_class.new }
+
+    context 'when started a new game' do
+      it 'first column is not full' do
+        col_index = 0
+        result = game.board_col_full?(col_index)
+
+        expect(result).to be false
+      end
+    end
+
+    context 'when the game is running' do
+      let(:col_index) { 0 }
+      let(:board_vertical_length) { 6 }
+
+      before do
+        player_input = col_index.to_s
+
+        allow(game).to receive(:player_input).and_return(player_input)
+      end
+
+      it 'first column is not full after inserted number once' do
+        game.player_input
+        result = game.board_col_full?(col_index)
+
+        expect(result).to be false
+      end
+
+      xit 'first column is full if all slots had been inserted number' do
+        board_vertical_length.times { game.player_input }
+        result = game.board_col_full?(col_index)
+
+        expect(result).to be true
       end
     end
   end
