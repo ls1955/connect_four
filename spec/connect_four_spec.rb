@@ -152,8 +152,8 @@ describe ConnectFour do
 
     context 'when current player is player1' do
       it 'insert player1 piece into column' do
-        game.insert_to_board_col(col_num)
         insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+        game.insert_to_board_col(col_num)
         board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
 
         expect(board_pos).to eq(p1_piece)
@@ -166,11 +166,82 @@ describe ConnectFour do
       end
 
       it 'insert player2 piece into column' do
-        game.insert_to_board_col(col_num)
         insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+        game.insert_to_board_col(col_num)
         board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
 
         expect(board_pos).to eq(p2_piece)
+      end
+    end
+
+    context 'after player inserted piece' do
+      it 'insert next piece at upper position of same column' do
+        prev_insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+
+        game.insert_to_board_col(col_num)
+
+        new_insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
+        expected_next_pos = prev_insert_pos - 1
+
+        expect(new_insert_pos).to eq(expected_next_pos)
+      end
+    end
+  end
+
+  <<~TODO
+    Well.. lets see.
+    Looks like the game is almost finished..?
+    ..Nah, probably not.
+    Well.. Guess I will need to check the good ol
+    horizontal line, vertical line, and diagonal line
+    Oh well.
+    At least I could implement sliding window for
+    horizontal and vertical line check....
+    Afterward, what next?
+    ..Right, the 'main' function of the game is not
+    yet implemented. Since all it does is send message
+    to other methods. ..Should I test that method?
+    ..Nah, probably not.
+    Anyway, I still need to have an intro function,
+    and outro function..
+    ..and right, printing the board between the round.
+    That will be fun.
+    ..Sigh, I don't want to imagine what will be like
+    for the Ruby last project.
+    Well, I am certainly.. looking forward for it
+
+    ..Alright, I am digressing.
+    Basically, for a short TLDR:
+
+    Implement check game winning and over conditions methods.
+    Implement main method.
+    Implement intro and outro method.
+
+    PS: since now game could check for
+    whether col is full, looks like I
+    could add a new check in verify input
+  TODO
+
+  describe '#board_full?' do
+    subject(:game) { described_class.new }
+
+    context 'when the board is not full' do
+      it 'return false' do
+        result = game.board_full?
+
+        expect(result).to eq(false)
+      end
+    end
+
+    context 'when the board is full' do
+      before do
+        allow(game).to receive(:board_col_full?).and_return(true)
+      end
+
+      it 'return true' do
+        result = game.board_full?
+
+        expect(result).to eq(true)
       end
     end
   end
@@ -204,8 +275,8 @@ describe ConnectFour do
         expect(result).to be false
       end
 
-      xit 'first column is full if all slots had been inserted number' do
-        board_vertical_length.times { game.player_input }
+      it 'first column is full if all slots had been inserted number' do
+        board_vertical_length.times { game.insert_to_board_col(0) }
         result = game.board_col_full?(col_index)
 
         expect(result).to be true

@@ -3,6 +3,8 @@
 # Connect four game on terminal
 class ConnectFour
   def initialize(row_amount = 6, col_amount = 7)
+    @row_amount = row_amount
+    @col_amount = col_amount
     @board = Array.new(row_amount) { Array.new(col_amount, '') }
     @col_insert_pos = Array.new(col_amount, row_amount - 1)
     @player_round = 'player1'
@@ -37,6 +39,8 @@ class ConnectFour
   def insert_to_board_col(col_index)
     insert_pos = @col_insert_pos[col_index]
 
+    update_insert_pos(col_index)
+
     @board[col_index][insert_pos] =
       if @player_round == 'player1'
         @player1_piece
@@ -45,7 +49,19 @@ class ConnectFour
       end
   end
 
+  def update_insert_pos(col_index)
+    @col_insert_pos[col_index] -= 1
+  end
+
+  def board_full?
+    @col_amount.times do |col_index|
+      return false unless board_col_full?(col_index)
+    end
+
+    true
+  end
+
   def board_col_full?(col_index)
-    false
+    @col_insert_pos[col_index] == -1
   end
 end
