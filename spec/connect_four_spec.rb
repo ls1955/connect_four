@@ -3,13 +3,13 @@
 require_relative './../lib/connect_four'
 
 describe ConnectFour do
-  describe '#verify_input' do
-    subject(:game_given_input) { described_class.new }
+  subject(:game) { described_class.new }
 
+  describe '#verify_input' do
     context 'when given the input' do
       it 'return the input if input is between columns index' do
         valid_input = 0
-        result = game_given_input.verify_input(valid_input)
+        result = game.verify_input(valid_input)
 
         expect(result).to eq(valid_input)
       end
@@ -17,7 +17,7 @@ describe ConnectFour do
       it 'return the input if input is first columns index' do
         first_col_index = 0
         valid_input = first_col_index
-        result = game_given_input.verify_input(valid_input)
+        result = game.verify_input(valid_input)
 
         expect(result).to eq(valid_input)
       end
@@ -25,14 +25,28 @@ describe ConnectFour do
       it 'return the input if input is last columns index' do
         last_col_index = 6
         valid_input = last_col_index
-        result = game_given_input.verify_input(valid_input)
+        result = game.verify_input(valid_input)
 
         expect(result).to eq(valid_input)
       end
 
       it 'return nil if input is out of bound' do
         invalid_input = 100
-        result = game_given_input.verify_input(invalid_input)
+        result = game.verify_input(invalid_input)
+
+        expect(result).to be_nil
+      end
+    end
+
+    context 'if the column is already fulled' do
+      let(:col_full_input) { 0 }
+
+      before do
+        allow(game).to receive(:board_col_full?).with((col_full_input)).and_return(true)
+      end
+
+      it 'return nil' do
+        result = game.verify_input(col_full_input)
 
         expect(result).to be_nil
       end
@@ -40,7 +54,6 @@ describe ConnectFour do
   end
 
   describe '#player_input' do
-    subject(:game) { described_class.new }
     let(:error_message) { 'Invalid input. Please try again.' }
 
     context 'when given a valid input' do
@@ -111,8 +124,6 @@ describe ConnectFour do
   end
 
   describe '#advance_round' do
-    subject(:game) { described_class.new }
-
     context 'if current round is player1 round' do
       before do
         game.instance_variable_set(:@player_round, 'player1')
@@ -140,9 +151,7 @@ describe ConnectFour do
     end
   end
 
-  describe '#insert_to_board_col' do
-    subject(:game) { described_class.new }
-    let(:col_num) { 0 }
+  describe '#insert_to_board_col' do    let(:col_num) { 0 }
     let(:p1_piece) { game.instance_variable_get(:@player1_piece) }
     let(:p2_piece) { game.instance_variable_get(:@player2_piece) }
 
@@ -154,7 +163,7 @@ describe ConnectFour do
       it 'insert player1 piece into column' do
         insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
         game.insert_to_board_col(col_num)
-        board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
+        board_pos = game.instance_variable_get(:@board)[insert_pos][col_num]
 
         expect(board_pos).to eq(p1_piece)
       end
@@ -168,7 +177,7 @@ describe ConnectFour do
       it 'insert player2 piece into column' do
         insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
         game.insert_to_board_col(col_num)
-        board_pos = game.instance_variable_get(:@board)[col_num][insert_pos]
+        board_pos = game.instance_variable_get(:@board)[insert_pos][col_num]
 
         expect(board_pos).to eq(p2_piece)
       end
@@ -188,43 +197,111 @@ describe ConnectFour do
     end
   end
 
-  <<~TODO
-    Well.. lets see.
-    Looks like the game is almost finished..?
-    ..Nah, probably not.
-    Well.. Guess I will need to check the good ol
-    horizontal line, vertical line, and diagonal line
-    Oh well.
-    At least I could implement sliding window for
-    horizontal and vertical line check....
-    Afterward, what next?
-    ..Right, the 'main' function of the game is not
-    yet implemented. Since all it does is send message
-    to other methods. ..Should I test that method?
-    ..Nah, probably not.
-    Anyway, I still need to have an intro function,
-    and outro function..
-    ..and right, printing the board between the round.
-    That will be fun.
-    ..Sigh, I don't want to imagine what will be like
-    for the Ruby last project.
-    Well, I am certainly.. looking forward for it
+  describe '#board_horizontal_game_over?' do
+    context 'when same player do not insert 4 pieces next to each other' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0, 2, 4, 6)
+      end
 
-    ..Alright, I am digressing.
-    Basically, for a short TLDR:
+      it 'return false' do
+        4.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
 
-    Implement check game winning and over conditions methods.
-    Implement main method.
-    Implement intro and outro method.
+        result = game.board_horizontal_game_over?
 
-    PS: since now game could check for
-    whether col is full, looks like I
-    could add a new check in verify input
-  TODO
+        expect(result).to eq(false)
+      end
+    end
+
+    context 'when same player insert 4 pieces next to each other' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
+      end
+
+      it 'return true' do
+        4.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
+
+        result = game.board_horizontal_game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+  end
+
+  describe '#board_vertical_game_over?' do
+    context 'when same player put pieces in same column 4 times' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0)
+      end
+
+      it 'return true' do
+        4.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
+
+        result = game.board_vertical_game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when same player put pieces in different column 4 times' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
+      end
+
+      it 'return false' do
+        4.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
+
+        result = game.board_vertical_game_over?
+
+        expect(result).to eq(false)
+      end
+    end
+  end
+
+  describe '#board_diagonal_game_over?' do
+    context 'when same player line up 4 piece diagonally' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0, 1, 1, 2, 2, 2, 3)
+      end
+
+      xit 'return true' do
+        result = game.board_diagonal_game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when same player does not line up 4 piece diagonally' do
+      before do
+        game.instance_variable_set(:@player_round, 'player1')
+        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
+      end
+
+      xit 'return false' do
+        result = game.board_diagonal_game_over?
+
+        expect(result).to eq(false)
+      end
+    end
+  end
 
   describe '#board_full?' do
-    subject(:game) { described_class.new }
-
     context 'when the board is not full' do
       it 'return false' do
         result = game.board_full?
@@ -247,8 +324,6 @@ describe ConnectFour do
   end
 
   describe '#board_col_full?' do
-    subject(:game) { described_class.new }
-
     context 'when started a new game' do
       it 'first column is not full' do
         col_index = 0
@@ -283,4 +358,81 @@ describe ConnectFour do
       end
     end
   end
+
+  describe 'game_over?' do
+    context 'when the board is full' do
+      before do
+        allow(game).to receive(:board_full?).and_return true
+      end
+
+      it 'return true' do
+        result = game.game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when the vertical winning condition is reached' do
+      before do
+        allow(game).to receive(:board_vertical_game_over?).and_return(true)
+      end
+
+      it 'return true' do
+        result = game.game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when the horizontal winning condition is reached' do
+      before do
+        allow(game).to receive(:board_horizontal_game_over?).and_return(true)
+      end
+
+      it 'return true' do
+        result = game.game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when the diagonal winning condition is reached' do
+      before do
+        allow(game).to receive(:board_diagonal_game_over?).and_return(true)
+      end
+
+      it 'return true' do
+        result = game.game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when neither above 4 conditions is reached' do
+      before do
+        allow(game).to receive(:board_full?).and_return(false)
+        allow(game).to receive(:board_vertical_game_over?).and_return(false)
+        allow(game).to receive(:board_horizontal_game_over?).and_return(false)
+        allow(game).to receive(:board_vertical_game_over?).and_return(false)
+      end
+
+      it 'return false' do
+        result = game.game_over?
+
+        expect(result).to eq(false)
+      end
+    end
+  end
 end
+
+<<~NOTE
+  Maybe I could isolate board into a new class..?
+
+  Implement main method.
+  Implement intro and outro method.
+  Test winner method
+NOTE
+
+<<~TODO
+  Implement legit diagonal check method
+TODO
