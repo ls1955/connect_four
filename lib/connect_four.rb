@@ -7,15 +7,35 @@ class ConnectFour
   def initialize(row_amount = 6, col_amount = 7)
     @row_amount = row_amount
     @col_amount = col_amount
-    @board = Array.new(row_amount) { Array.new(col_amount, '') }
+    @board = Array.new(row_amount) { Array.new(col_amount, ' ') }
     @col_insert_pos = Array.new(col_amount, row_amount - 1)
     @player_round = 'player1'
     @player1_piece = '0'
     @player2_piece = 'X'
   end
 
+  def main
+    intro
+    progress_round
+    outro
+  end
+
+  def progress_round
+    until game_over?
+      print_board
+
+      input = player_input
+
+      insert_to_board_col(input)
+
+      advance_round
+    end
+  end
+
   def player_input
     loop do
+      puts 'Please select a column.'
+
       input = gets.chomp
       verified_num = verify_input(input.to_i) if input.match?(/^\d$/)
 
@@ -30,11 +50,17 @@ class ConnectFour
   end
 
   def game_over?
-    board_full? || board_vertical_game_over? || board_horizontal_game_over? || board_diagonal_game_over? || false
+    if board_full?
+      draw_game
+    elsif board_horizontal_game_over? || board_vertical_game_over? || board_diagonal_game_over?
+      true
+    else
+      false
+    end
   end
 
   def advance_round
-    @player_round = 
+    @player_round =
       if @player_round == 'player1'
         'player2'
       else
@@ -71,12 +97,13 @@ class ConnectFour
     @col_insert_pos[col_index] == -1
   end
 
+  # FIXME: not working as intended
   def board_horizontal_game_over?
     window_size = 4
 
     board.each do |row|
-      (row.length - window_size + 1).times do |left|
-        curr_window = row[left..(left + window_size - 1)]
+      (row.length - window_size).times do |left|
+        curr_window = row[left..(left + (window_size - 1))]
 
         return true if curr_window.all?(player1_piece || player2_piece)
       end
@@ -101,21 +128,51 @@ class ConnectFour
     false
   end
 
-  def board_diagonal_game_over?; end
+  def board_diagonal_game_over?
+    false
+  end
 
-  private
+  def intro
+    puts <<~INTRO
+      ----------------
+      --Connect Four--
+      ----------------
+    INTRO
+  end
 
-  def intro; end
+  def print_board
+    board.each do |row|
+      puts "|#{row.join('|')}|"
+    end
+
+    puts " #{(0..6).to_a.join(' ')}"
+  end
 
   def draw_game
     puts 'There is no winner'
   end
 
   def outro
-    puts "The winner is #{winner}"
+    puts <<~OUTRO
+
+      The winner is:
+      ----------------
+      ----#{winner}-----
+      ----------------
+    OUTRO
   end
 
   def winner
-    player_round == 'player1' ? 'player1' : 'player2'
+    # FIXME
+    # as winner declaration is defered until next round
+    # as such, the winner will be last round player.
+    player_round == 'player1' ? 'player2' : 'player1'
   end
 end
+
+# ConnectFour.new.main
+
+# TODO
+# Make the board prettier?
+# REFACTOR class
+# Allow player to choose their own piece?

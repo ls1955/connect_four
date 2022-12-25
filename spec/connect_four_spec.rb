@@ -425,14 +425,6 @@ describe ConnectFour do
   end
 end
 
-<<~NOTE
-  Maybe I could isolate board into a new class..?
-
-  Implement main method.
-  Implement intro and outro method.
-  Test winner method
-NOTE
-
 <<~TODO
   Implement legit diagonal check method
 TODO
