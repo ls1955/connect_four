@@ -56,6 +56,10 @@ describe ConnectFour do
   describe '#player_input' do
     let(:error_message) { 'Invalid input. Please try again.' }
 
+    before do
+      allow(game).to receive(:player_prompt)
+    end
+
     context 'when given a valid input' do
       it 'return the valid input num' do
         valid_input = '3'
@@ -280,7 +284,7 @@ describe ConnectFour do
         allow(game).to receive(:player_input).and_return(0, 1, 1, 2, 2, 2, 3)
       end
 
-      xit 'return true' do
+      it 'return true' do
         result = game.board_diagonal_game_over?
 
         expect(result).to eq(true)
@@ -293,7 +297,7 @@ describe ConnectFour do
         allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
       end
 
-      xit 'return false' do
+      it 'return false' do
         result = game.board_diagonal_game_over?
 
         expect(result).to eq(false)
@@ -360,18 +364,6 @@ describe ConnectFour do
   end
 
   describe 'game_over?' do
-    context 'when the board is full' do
-      before do
-        allow(game).to receive(:board_full?).and_return true
-      end
-
-      it 'return true' do
-        result = game.game_over?
-
-        expect(result).to eq(true)
-      end
-    end
-
     context 'when the vertical winning condition is reached' do
       before do
         allow(game).to receive(:board_vertical_game_over?).and_return(true)
