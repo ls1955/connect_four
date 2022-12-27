@@ -40,7 +40,6 @@ class ConnectFour
   def player_input
     loop do
       player_prompt
-
       input = gets.chomp
       verified_num = verify_input(input.to_i) if input.match?(/^\d$/)
 
@@ -137,17 +136,17 @@ class ConnectFour
   end
 
   def board_diagonal_game_over?
-    0.upto(2) do |x|
-      0.upto(3) do |y|
-        return true if board[x][y] != ' ' && board[x][y] == board[x + 1][y + 1] && board[x][y] == board[x + 2][y + 2] && board[x][y] == board[x + 3][y + 3]
+    0.upto(3) do |x|
+      0.upto(2) do |y|
+        return true if board[y][x] != ' ' && board[y][x] == board[y + 1][x + 1] && board[y][x] == board[y + 2][x + 2] && board[y][x] == board[y + 3][x + 3]
       end
     end
 
-    # 6.downto(3) do |x|
-    #   0.upto(3) do |y|
-    #     return true if board[x][y] != ' ' && board[x][y] == board[x - 1][y + 1] && board[x][y] == board[x - 2][y + 2] && board[x][y] == board[x - 3][y + 3]
-    #   end
-    # end
+    6.downto(3) do |x|
+      0.upto(2) do |y|
+        return true if board[y][x] != ' ' && board[y][x] == board[y + 1][x - 1] && board[y][x] == board[y + 2][x - 2] && board[y][x] == board[y + 3][x - 3]
+      end
+    end
 
     false
   end
@@ -190,8 +189,6 @@ class ConnectFour
     player_round == 'player1' ? 'player1' : 'player2'
   end
 end
-
-# ConnectFour.new.main
 
 # TODO
 # Make the board prettier?

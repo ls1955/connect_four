@@ -285,6 +285,11 @@ describe ConnectFour do
       end
 
       it 'return true' do
+        10.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
+
         result = game.board_diagonal_game_over?
 
         expect(result).to eq(true)
@@ -298,6 +303,11 @@ describe ConnectFour do
       end
 
       it 'return false' do
+        10.times do
+          inputs = game.player_input
+          game.insert_to_board_col(inputs)
+        end
+
         result = game.board_diagonal_game_over?
 
         expect(result).to eq(false)
