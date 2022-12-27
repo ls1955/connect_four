@@ -426,7 +426,3 @@ describe ConnectFour do
     end
   end
 end
-
-<<~TODO
-  Implement legit diagonal check method
-TODO
