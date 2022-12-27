@@ -160,6 +160,8 @@ class ConnectFour
   end
 
   def print_board
+    puts "\n"
+
     board.each do |row|
       puts "|#{row.join('|')}|"
     end
