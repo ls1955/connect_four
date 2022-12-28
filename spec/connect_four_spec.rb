@@ -374,6 +374,19 @@ describe ConnectFour do
   end
 
   describe 'game_over?' do
+    context 'when the board is full' do
+      before do
+        allow(game).to receive(:draw_game)
+        allow(game).to receive(:board_full?).and_return(true)
+      end
+
+      it 'return true' do
+        result = game.game_over?
+
+        expect(result).to eq(true)
+      end
+    end
+
     context 'when the vertical winning condition is reached' do
       before do
         allow(game).to receive(:board_vertical_game_over?).and_return(true)

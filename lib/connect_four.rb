@@ -58,9 +58,7 @@ class ConnectFour
   end
 
   def game_over?
-    if board_full?
-      draw_game
-    elsif board_horizontal_game_over? || board_vertical_game_over? || board_diagonal_game_over?
+    if board_full? || board_horizontal_game_over? || board_vertical_game_over? || board_diagonal_game_over?
       true
     else
       false
@@ -138,13 +136,21 @@ class ConnectFour
   def board_diagonal_game_over?
     0.upto(3) do |x|
       0.upto(2) do |y|
-        return true if board[y][x] != ' ' && board[y][x] == board[y + 1][x + 1] && board[y][x] == board[y + 2][x + 2] && board[y][x] == board[y + 3][x + 3]
+        diagonal = []
+
+        4.times { |offset| diagonal << board[y + offset][x + offset] }
+
+        return true if diagonal.all?(player1_piece) || diagonal.all?(player2_piece)
       end
     end
 
     6.downto(3) do |x|
       0.upto(2) do |y|
-        return true if board[y][x] != ' ' && board[y][x] == board[y + 1][x - 1] && board[y][x] == board[y + 2][x - 2] && board[y][x] == board[y + 3][x - 3]
+        diagonal = []
+
+        4.times { |offset| diagonal << board[y + offset][x - offset] }
+
+        return true if diagonal.all?(player1_piece) || diagonal.all?(player2_piece)
       end
     end
 
@@ -178,6 +184,8 @@ class ConnectFour
   end
 
   def outro
+    return draw_game if board_full?
+
     puts <<~OUTRO
 
       The winner is:
