@@ -1,5 +1,7 @@
 # frozen_string_literal: false
 
+require_relative './game_board'
+
 # Connect four game on terminal
 class ConnectFour
   attr_reader :row_amount, :col_amount, :board, :player_round, :player1_piece, :player2_piece
@@ -23,7 +25,7 @@ class ConnectFour
   def progress_round
     print_board
 
-    until game_over?
+    loop do
       print_current_player
 
       input = player_input
@@ -75,6 +77,8 @@ class ConnectFour
   end
 
   def insert_to_board_col(col_index)
+    new_board = GameBoard.new(row_amount, col_amount)
+    new_board.insert_to_board_col(col_index)
     insert_pos = @col_insert_pos[col_index]
 
     update_insert_pos(col_index)
