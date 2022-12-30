@@ -3,161 +3,130 @@
 require_relative './../lib/game_board'
 
 describe GameBoard do
-  describe '#insert_to_board_col' do
-    let(:col_num) { 0 }
-    let(:p1_piece) { game.instance_variable_get(:@player1_piece) }
-    let(:p2_piece) { game.instance_variable_get(:@player2_piece) }
+  subject(:game_board) { described_class.new }
+  let(:player1_piece) { 'X' }
+  let(:player2_piece) { 'O' }
 
-    before do
-      allow(game).to receive(:player_input).and_return(col_num)
-    end
+  describe '#insert_piece_to_col' do
+    let(:col) { 0 }
+    let(:player_piece) { 'X' }
+    let(:last_row) { game_board.row_amount - 1 }
 
-    context 'when current player is player1' do
-      it 'insert player1 piece into column' do
-        insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
-        game.insert_to_board_col(col_num)
-        board_pos = game.instance_variable_get(:@board)[insert_pos][col_num]
+    context 'when a column index and player piece is given' do
+      it 'insert player piece into respective column' do
+        game_board.insert_piece_to_col(col, player_piece)
 
-        expect(board_pos).to eq(p1_piece)
-      end
-    end
+        inserted_position = game_board.layout[last_row][col]
 
-    context 'when current player is player2' do
-      before do
-        game.instance_variable_set(:@player_round, 'player2')
-      end
-
-      it 'insert player2 piece into column' do
-        insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
-        game.insert_to_board_col(col_num)
-        board_pos = game.instance_variable_get(:@board)[insert_pos][col_num]
-
-        expect(board_pos).to eq(p2_piece)
-      end
-    end
-
-    context 'after player inserted piece' do
-      it 'insert next piece at upper position of same column' do
-        prev_insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
-
-        game.insert_to_board_col(col_num)
-
-        new_insert_pos = game.instance_variable_get(:@col_insert_pos)[col_num]
-        expected_next_pos = prev_insert_pos - 1
-
-        expect(new_insert_pos).to eq(expected_next_pos)
+        expect(inserted_position).to eq(player_piece)
       end
     end
   end
 
-  describe '#board_horizontal_game_over?' do
-    context 'when same player do not insert 4 pieces next to each other' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0, 2, 4, 6)
-      end
-
-      it 'return false' do
-        4.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
-
-        result = game.board_horizontal_game_over?
-
-        expect(result).to eq(false)
-      end
-    end
-
-    context 'when same player insert 4 pieces next to each other' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
-      end
+  describe '#four_same_piece_in_row?' do
+    context 'when 4 same pieces next to each other in a row' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', 'O', 'O', 'O', 'O']
+      ]
 
       it 'return true' do
-        4.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
-
-        result = game.board_horizontal_game_over?
-
-        expect(result).to eq(true)
-      end
-    end
-  end
-
-  describe '#board_vertical_game_over?' do
-    context 'when same player put pieces in same column 4 times' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0)
-      end
-
-      it 'return true' do
-        4.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
-
-        result = game.board_vertical_game_over?
-
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_row?(player1_piece, player2_piece)
         expect(result).to eq(true)
       end
     end
 
-    context 'when same player put pieces in different column 4 times' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
-      end
+    context 'when no 4 same pieces next to each other in a row' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', 'O', 'X', 'X', 'O', 'O']
+      ]
 
       it 'return false' do
-        4.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
-
-        result = game.board_vertical_game_over?
-
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_row?(player1_piece, player2_piece)
         expect(result).to eq(false)
       end
     end
   end
 
-  describe '#board_diagonal_game_over?' do
-    context 'when same player line up 4 piece diagonally' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0, 1, 1, 2, 2, 2, 3)
-      end
+  describe '#four_same_piece_in_col?' do
+    context 'when 4 same pieces next to each other in a column' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+      ]
 
       it 'return true' do
-        10.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_col?(player1_piece, player2_piece)
+        expect(result).to eq(true)
+      end
+    end
 
-        result = game.board_diagonal_game_over?
+    context 'when no 4 same pieces next to each other in a column' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' ']
+      ]
+
+      it 'return false' do
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_col?(player1_piece, player2_piece)
+        expect(result).to eq(false)
+      end
+    end
+  end
+
+  describe '#four_same_piece_in_diagonal?' do
+    context 'when 4 same pieces next to each other in a diagonal' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', 'X', ' ', ' ', ' '],
+        [' ', ' ', 'X', 'O', ' ', ' ', ' '],
+        [' ', 'X', 'O', 'O', ' ', ' ', ' '],
+        ['X', 'O', 'O', 'O', ' ', ' ', ' ']
+      ]
+
+      it 'return true' do
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
 
         expect(result).to eq(true)
       end
     end
 
-    context 'when same player does not line up 4 piece diagonally' do
-      before do
-        game.instance_variable_set(:@player_round, 'player1')
-        allow(game).to receive(:player_input).and_return(0, 1, 2, 3)
-      end
+    context 'when no 4 same pieces next to each other in a diagonal' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', 'X', ' ', ' ', ' ', ' ', ' '],
+        ['X', 'O', 'O', ' ', ' ', ' ', ' ']
+      ]
 
       it 'return false' do
-        10.times do
-          inputs = game.player_input
-          game.insert_to_board_col(inputs)
-        end
-
-        result = game.board_diagonal_game_over?
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
 
         expect(result).to eq(false)
       end
@@ -166,58 +135,39 @@ describe GameBoard do
 
   describe '#board_full?' do
     context 'when the board is not full' do
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', 'X', ' ', ' ', ' ', ' ', ' '],
+        ['X', 'O', 'O', ' ', ' ', ' ', ' ']
+      ]
+
       it 'return false' do
-        result = game.board_full?
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.full?
 
         expect(result).to eq(false)
       end
     end
 
     context 'when the board is full' do
-      before do
-        allow(game).to receive(:board_col_full?).and_return(true)
-      end
+      board_layout = [
+        %w[X X X O O O X],
+        %w[X 0 X O O O O],
+        %w[0 X X O X X X],
+        %w[X 0 X O O O X],
+        %w[0 X X O X X O],
+        %w[X 0 X O O O X],
+        %w[X X 0 X O O X]
+      ]
 
       it 'return true' do
-        result = game.board_full?
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.full?
 
         expect(result).to eq(true)
-      end
-    end
-  end
-
-  describe '#board_col_full?' do
-    context 'when started a new game' do
-      it 'first column is not full' do
-        col_index = 0
-        result = game.board_col_full?(col_index)
-
-        expect(result).to be false
-      end
-    end
-
-    context 'when the game is running' do
-      let(:col_index) { 0 }
-      let(:board_vertical_length) { 6 }
-
-      before do
-        player_input = col_index.to_s
-
-        allow(game).to receive(:player_input).and_return(player_input)
-      end
-
-      it 'first column is not full after inserted number once' do
-        game.player_input
-        result = game.board_col_full?(col_index)
-
-        expect(result).to be false
-      end
-
-      it 'first column is full if all slots had been inserted number' do
-        board_vertical_length.times { game.insert_to_board_col(0) }
-        result = game.board_col_full?(col_index)
-
-        expect(result).to be true
       end
     end
   end
