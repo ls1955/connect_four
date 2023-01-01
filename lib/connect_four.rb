@@ -22,7 +22,7 @@ class ConnectFour
   end
 
   def progress_round
-    puts board.to_s
+    puts board
 
     loop do
       print_current_player
@@ -30,9 +30,9 @@ class ConnectFour
       input = player_input
 
       insert_to_board_col(input)
-      puts board.to_s
+      puts board
 
-      break if game_over?
+      break if board.game_over?(player1_piece, player2_piece)
 
       advance_round
     end
@@ -58,18 +58,6 @@ class ConnectFour
     input_num if input_num.between?(0, 6) && !board.col_full?(input_num)
   end
 
-  def game_over?
-    return true if board.full?
-
-    return true if board.four_same_piece_in_col?(player1_piece, player2_piece)
-
-    return true if board.four_same_piece_in_row?(player1_piece, player2_piece)
-
-    return true if board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
-
-    false
-  end
-
   def advance_round
     @player_round = @player_round == 'player1' ? 'player2' : 'player1'
   end
@@ -77,26 +65,6 @@ class ConnectFour
   def insert_to_board_col(col_index)
     curr_piece = player_round == 'player1' ? player1_piece : player2_piece
     board.insert_piece_to_col(col_index, curr_piece)
-  end
-
-  def board_full?
-    board.full?
-  end
-
-  def board_col_full?(col_index)
-    board.col_full?(col_index)
-  end
-
-  def board_horizontal_game_over?
-    board.four_same_piece_in_row?(player1_piece,player2_piece)
-  end
-
-  def board_vertical_game_over?
-    board.four_same_piece_in_col?(player1_piece, player2_piece)
-  end
-
-  def board_diagonal_game_over?
-    board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
   end
 
   def intro
@@ -107,26 +75,15 @@ class ConnectFour
     INTRO
   end
 
-  def print_board
-    puts "\n"
-
-    board.each do |row|
-      puts "|#{row.join('|')}|"
-    end
-
-    puts " #{(0..6).to_a.join(' ')}"
-  end
-
   def print_current_player
     puts "Current player: #{player_round == 'player1' ? 'player1' : 'player2'}"
   end
 
-  def draw_game
-    puts 'There is no winner'
-  end
-
   def outro
-    return draw_game if board.full?
+    if board.full?
+      puts 'There is no winner'
+      return
+    end
 
     puts <<~OUTRO
 
@@ -134,6 +91,7 @@ class ConnectFour
       ----------------
       ----#{winner}-----
       ----------------
+
     OUTRO
   end
 
@@ -141,8 +99,3 @@ class ConnectFour
     player_round == 'player1' ? 'player1' : 'player2'
   end
 end
-
-# TODO
-# Make the board prettier?
-
-ConnectFour.new.main

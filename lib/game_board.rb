@@ -1,6 +1,6 @@
 # frozen_string_literal: false
 
-# ..the gameboard
+# ..the connect four gameboard
 class GameBoard
   attr_reader :layout, :insert_row_pos, :row_amount, :col_amount
 
@@ -88,11 +88,17 @@ class GameBoard
     true
   end
 
+  def game_over?(p1_piece, p2_piece)
+    full? || four_same_piece_in_col?(p1_piece, p2_piece) || four_same_piece_in_row?(p1_piece, p2_piece) || four_same_piece_in_diagonal?(p1_piece, p2_piece)
+  end
+
   def col_full?(col)
     row_amount.times { |row| return false if layout[row][col] == ' ' }
     true
   end
 
+  # FIXME
+  # print class and encoding of ID although overrode ethod
   def to_s
     puts "\n"
     layout.each { |row| puts "|#{row.join('|')}|" }
