@@ -85,21 +85,17 @@ class GameBoard
 
   def full?
     layout.each { |row| return false if row.any?(' ') }
-
     true
   end
 
   def col_full?(col)
-    insert_pos[col] == -1
+    row_amount.times { |row| return false if layout[row][col] == ' ' }
+    true
   end
 
-  def print_board
+  def to_s
     puts "\n"
-
-    layout.each do |row|
-      puts "|#{row.join('|')}|"
-    end
-
+    layout.each { |row| puts "|#{row.join('|')}|" }
     puts " #{(0..6).to_a.join(' ')}"
   end
 end

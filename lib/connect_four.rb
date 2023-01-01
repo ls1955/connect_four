@@ -6,11 +6,10 @@ require_relative './game_board'
 class ConnectFour
   attr_reader :row_amount, :col_amount, :board, :player_round, :player1_piece, :player2_piece
 
-  def initialize(row_amount = 6, col_amount = 7)
+  def initialize(row_amount = 6, col_amount = 7, board = GameBoard.new)
     @row_amount = row_amount
     @col_amount = col_amount
-    @board = Array.new(row_amount) { Array.new(col_amount, ' ') }
-    @col_insert_pos = Array.new(col_amount, row_amount - 1)
+    @board = board
     @player_round = 'player1'
     @player1_piece = "\e[33m\u25cf\e[0m"
     @player2_piece = "\e[34m\u25cf\e[0m"
@@ -23,7 +22,7 @@ class ConnectFour
   end
 
   def progress_round
-    print_board
+    puts board.to_s
 
     loop do
       print_current_player
@@ -31,7 +30,7 @@ class ConnectFour
       input = player_input
 
       insert_to_board_col(input)
-      print_board
+      puts board.to_s
 
       break if game_over?
 
@@ -56,109 +55,48 @@ class ConnectFour
   end
 
   def verify_input(input_num)
-    input_num if input_num.between?(0, 6) && !board_col_full?(input_num)
+    input_num if input_num.between?(0, 6) && !board.col_full?(input_num)
   end
 
   def game_over?
-    if board_full? || board_horizontal_game_over? || board_vertical_game_over? || board_diagonal_game_over?
-      true
-    else
-      false
-    end
+    return true if board.full?
+
+    return true if board.four_same_piece_in_col?(player1_piece, player2_piece)
+
+    return true if board.four_same_piece_in_row?(player1_piece, player2_piece)
+
+    return true if board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
+
+    false
   end
 
   def advance_round
-    @player_round =
-      if @player_round == 'player1'
-        'player2'
-      else
-        'player1'
-      end
+    @player_round = @player_round == 'player1' ? 'player2' : 'player1'
   end
 
   def insert_to_board_col(col_index)
-    new_board = GameBoard.new(row_amount, col_amount)
-    new_board.insert_to_board_col(col_index)
-    insert_pos = @col_insert_pos[col_index]
-
-    update_insert_pos(col_index)
-
-    @board[insert_pos][col_index] =
-      if @player_round == 'player1'
-        @player1_piece
-      else
-        @player2_piece
-      end
-  end
-
-  def update_insert_pos(col_index)
-    @col_insert_pos[col_index] -= 1
+    curr_piece = player_round == 'player1' ? player1_piece : player2_piece
+    board.insert_piece_to_col(col_index, curr_piece)
   end
 
   def board_full?
-    @col_amount.times do |col_index|
-      return false unless board_col_full?(col_index)
-    end
-
-    true
+    board.full?
   end
 
   def board_col_full?(col_index)
-    @col_insert_pos[col_index] == -1
+    board.col_full?(col_index)
   end
 
   def board_horizontal_game_over?
-    window_size = 4
-
-    board.each do |row|
-      (row.length - window_size).times do |left|
-        curr_window = row[left..(left + (window_size - 1))]
-
-        return true if curr_window.all?(player1_piece) || curr_window.all?(player2_piece)
-      end
-    end
-
-    false
+    board.four_same_piece_in_row?(player1_piece,player2_piece)
   end
 
   def board_vertical_game_over?
-    @col_amount.times do |col_num|
-      3.times do |row_start_index|
-        curr_vertical_col = []
-
-        4.times do |i|
-          curr_vertical_col << @board[row_start_index + i][col_num]
-        end
-
-        return true if curr_vertical_col.all?(player1_piece) || curr_vertical_col.all?(player2_piece)
-      end
-    end
-
-    false
+    board.four_same_piece_in_col?(player1_piece, player2_piece)
   end
 
   def board_diagonal_game_over?
-    0.upto(3) do |x|
-      0.upto(2) do |y|
-        diagonal = []
-
-        4.times { |offset| diagonal << board[y + offset][x + offset] }
-
-        return true if diagonal.all?(player1_piece) || diagonal.all?(player2_piece)
-      end
-    end
-
-    6.downto(3) do |x|
-      0.upto(2) do |y|
-        diagonal = []
-
-        4.times { |offset| diagonal << board[y + offset][x - offset] }
-
-        return true if diagonal.all?(player1_piece) || diagonal.all?(player2_piece)
-      end
-    end
-
-    false
+    board.four_same_piece_in_diagonal?(player1_piece, player2_piece)
   end
 
   def intro
@@ -188,7 +126,7 @@ class ConnectFour
   end
 
   def outro
-    return draw_game if board_full?
+    return draw_game if board.full?
 
     puts <<~OUTRO
 
@@ -206,5 +144,5 @@ end
 
 # TODO
 # Make the board prettier?
-# REFACTOR class
-# Allow player to choose their own piece?
+
+ConnectFour.new.main

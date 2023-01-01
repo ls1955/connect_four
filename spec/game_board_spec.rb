@@ -133,6 +133,46 @@ describe GameBoard do
     end
   end
 
+  describe '#col_full?' do
+    context 'when a col index is given, and that col is full' do
+      col = 0
+      board_layout = [
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' ']
+      ]
+
+      it 'return true' do
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.col_full?(col)
+
+        expect(result).to eq(true)
+      end
+    end
+
+    context 'when a col index is given, and that col is not full' do
+      col = 0
+      board_layout = [
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        [' ', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['O', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' '],
+        ['X', ' ', ' ', ' ', ' ', ' ', ' ']
+      ]
+
+      it 'return false' do
+        game_board.instance_variable_set(:@layout, board_layout)
+        result = game_board.col_full?(col)
+
+        expect(result).to eq(false)
+      end
+    end
+  end
+
   describe '#board_full?' do
     context 'when the board is not full' do
       board_layout = [
