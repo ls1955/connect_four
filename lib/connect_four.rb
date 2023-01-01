@@ -1,16 +1,17 @@
 # frozen_string_literal: false
 
 require_relative './game_board'
+require_relative './player_round'
 
 # Connect four game on terminal
 class ConnectFour
-  attr_reader :row_amount, :col_amount, :board, :player_round, :player1_piece, :player2_piece
+  attr_reader :row_amount, :col_amount, :board, :round, :player1_piece, :player2_piece
 
-  def initialize(row_amount = 6, col_amount = 7, board = GameBoard.new)
+  def initialize(row_amount = 6, col_amount = 7, board = GameBoard.new, round = PlayerRound.new)
     @row_amount = row_amount
     @col_amount = col_amount
     @board = board
-    @player_round = 'player1'
+    @round = round
     @player1_piece = "\e[33m\u25cf\e[0m"
     @player2_piece = "\e[34m\u25cf\e[0m"
   end
@@ -25,7 +26,7 @@ class ConnectFour
     puts board
 
     loop do
-      print_current_player
+      puts round
 
       input = player_input
 
@@ -35,7 +36,7 @@ class ConnectFour
 
       break if board.game_over?(player1_piece, player2_piece)
 
-      advance_round
+      round.advance
     end
   end
 
@@ -59,12 +60,11 @@ class ConnectFour
     input_num if input_num.between?(0, 6) && !board.col_full?(input_num)
   end
 
-  def advance_round
-    @player_round = @player_round == 'player1' ? 'player2' : 'player1'
+  def curr_piece
+    round.player == 'player1' ? player1_piece : player2_piece
   end
 
   def insert_to_board_col(col_index)
-    curr_piece = player_round == 'player1' ? player1_piece : player2_piece
     board.insert_piece_to_col(col_index, curr_piece)
   end
 
@@ -76,27 +76,18 @@ class ConnectFour
     INTRO
   end
 
-  def print_current_player
-    puts "Current player: #{player_round == 'player1' ? 'player1' : 'player2'}"
-  end
-
   def outro
     if board.full?
       puts 'There is no winner'
-      return
+    else
+      puts <<~OUTRO
+
+        The winner is:
+        ----------------
+        ----#{round.player}-----
+        ----------------
+
+      OUTRO
     end
-
-    puts <<~OUTRO
-
-      The winner is:
-      ----------------
-      ----#{winner}-----
-      ----------------
-
-    OUTRO
-  end
-
-  def winner
-    player_round == 'player1' ? 'player1' : 'player2'
   end
 end

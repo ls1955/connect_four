@@ -9,6 +9,10 @@ class PlayerRound
   end
 
   def advance
-    player = player == 'player1' ? 'player2' : 'player1'
+    @player = player == 'player1' ? 'player2' : 'player1'
+  end
+
+  def to_s
+    "Current player: #{player}"
   end
 end
