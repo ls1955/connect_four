@@ -30,6 +30,7 @@ class ConnectFour
       input = player_input
 
       insert_to_board_col(input)
+
       puts board
 
       break if board.game_over?(player1_piece, player2_piece)
