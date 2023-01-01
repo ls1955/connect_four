@@ -97,11 +97,10 @@ class GameBoard
     true
   end
 
-  # FIXME
-  # print class and encoding of ID although overrode ethod
   def to_s
     puts "\n"
     layout.each { |row| puts "|#{row.join('|')}|" }
     puts " #{(0..6).to_a.join(' ')}"
+    ''
   end
 end
